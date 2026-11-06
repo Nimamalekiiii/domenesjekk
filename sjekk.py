@@ -155,16 +155,20 @@ def skriv_rapport(domene, funn):
     print("\nRapporten gjelder bare disse kontrollene og er ikke en fullstendig sikkerhetsvurdering.")
 
 
-if len(sys.argv) != 2:
-    print("Bruk: python sjekk.py domene.no")
-    sys.exit(1)
+def kjor_alle_sjekker(domene):
+    return [
+        sjekk_spf(domene),
+        sjekk_dmarc(domene),
+        sjekk_dkim(domene),
+        sjekk_tls(domene),
+        sjekk_headere(domene),
+    ]
 
-domene = sys.argv[1]
-funn = [
-    sjekk_spf(domene),
-    sjekk_dmarc(domene),
-    sjekk_dkim(domene),
-    sjekk_tls(domene),
-    sjekk_headere(domene),
-]
-skriv_rapport(domene, funn)
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Bruk: python sjekk.py domene.no")
+        sys.exit(1)
+
+    domene = sys.argv[1]
+    skriv_rapport(domene, kjor_alle_sjekker(domene))

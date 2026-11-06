@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Domenesjekk</title>
+  <style>
+    body { max-width: 720px; margin: 40px auto; padding: 0 16px; font-family: system-ui, sans-serif; line-height: 1.5; color: #1f2933; }
+    form { display: flex; gap: 8px; margin: 24px 0; }
+    input { flex: 1; min-width: 0; padding: 10px; font-size: 16px; }
+    button { padding: 10px 16px; font-size: 16px; }
+    .funn { border-left: 6px solid #9aa5b1; padding: 8px 12px; margin: 12px 0; background: #f5f7fa; }
+    .HØY { border-color: #c81e1e; }
+    .MIDDELS { border-color: #d97706; }
+    .LAV { border-color: #ca8a04; }
+    .OK { border-color: #15803d; }
+    .feil { color: #c81e1e; }
+    .liten { color: #52606d; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>Domenesjekk</h1>
+  <p>Sjekk e-post- og nettsideinnstillingene til et domene.</p>
+
+  <form method="post">
+    <input name="domene" placeholder="bedrift.no" aria-label="Domene" required>
+    <button type="submit">Sjekk</button>
+  </form>
+
+  {% if feil %}<p class="feil">{{ feil }}</p>{% endif %}
+
+  {% if funn %}
+    <h2>Rapport for {{ domene }}</h2>
+    {% for f in funn %}
+      <div class="funn {{ f.niva }}">
+        <strong>{{ f.niva }} – {{ f.tema }}</strong><br>
+        {{ f.funn }}
+        {% if f.tiltak %}<br><em>Tiltak: {{ f.tiltak }}</em>{% endif %}
+      </div>
+    {% endfor %}
+    <p class="liten">Rapporten gjelder bare disse kontrollene og er ikke en fullstendig sikkerhetsvurdering.</p>
+  {% endif %}
+</body>
+</html>
