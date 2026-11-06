@@ -12,3 +12,17 @@ source .venv/bin/activate
 pip install -r requirements.txt
 python sjekk.py example.no
 ```
+
+
+
+## Resultat på eget domene
+
+Jeg kjørte Domenesjekk på porteføljesiden min og fant at alle de fire sikkerhetsheaderne manglet. Jeg la dem inn i `.htaccess`, testet siden i Safari og kjørte sjekken på nytt.
+
+| Kontroll | Før | Etter |
+|---|---|---|
+| Sikkerhetsheadere | Mangler 4 av 4 | Alle 4 er satt |
+| Funn på MIDDELS | 1 | 0 |
+| Funn på OK | 2 | 3 |
+
+CSP ble først testet i Report-Only, men Safari viste at den trengte `report-to` for å ha effekt. Derfor ble den testet direkte, med en enkel vei tilbake. `style-src` bruker `'unsafe-inline'` fordi siden har `style`-attributter.
