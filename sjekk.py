@@ -1,5 +1,6 @@
 import sys
 import dns.resolver
+import requests
 
 import socket
 import ssl
@@ -77,8 +78,25 @@ def sjekk_tls(domene):
         return f"VARSEL: sertifikatet utløper om {dager} dager ({versjon})"
     return f"OK: sertifikatet varer i {dager} dager til ({versjon})"
 
+def sjekk_headere(domene):
+    viktige = [
+        "Strict-Transport-Security",
+        "Content-Security-Policy",
+        "X-Content-Type-Options",
+        "X-Frame-Options",
+    ]
+    try:
+        svar = requests.get(f"https://{domene}", timeout=10)
+    except requests.RequestException:
+        return "FEIL: fikk ikke hentet nettsiden"
+
+    mangler = [h for h in viktige if h not in svar.headers]
+    if not mangler:
+        return "OK: alle de fire headerne er satt"
+    return f"MANGLER {len(mangler)} av 4: {', '.join(mangler)}"
 
 domene = sys.argv[1]
 print("SPF:", sjekk_spf(domene))
 print("DMARC:", sjekk_dmarc(domene))
 print("TLS:", sjekk_tls(domene))
+print("Headere:", sjekk_headere(domene))
