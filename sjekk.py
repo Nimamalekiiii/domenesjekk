@@ -1,6 +1,10 @@
 import sys
 import dns.resolver
 
+import socket
+import ssl
+from datetime import datetime, timezone
+
 def hent_txt(navn):
     try:
         svar = dns.resolver.resolve(navn, "TXT")
@@ -51,6 +55,30 @@ def sjekk_dmarc(domene):
 
     return "FEIL: fant ingen policy"
 
+
+def sjekk_tls(domene):
+    kontekst = ssl.create_default_context()
+    try:
+        with socket.create_connection((domene, 443), timeout=5) as tilkobling:
+            with kontekst.wrap_socket(tilkobling, server_hostname=domene) as tls:
+                sertifikat = tls.getpeercert()
+                versjon = tls.version()
+    except ssl.SSLCertVerificationError:
+        return "FEIL: sertifikatet kunne ikke verifiseres"
+    except OSError:
+        return "MANGLER: fikk ikke kontakt med HTTPS på port 443"
+
+    utlop = datetime.fromtimestamp(
+        ssl.cert_time_to_seconds(sertifikat["notAfter"]), timezone.utc
+    )
+    dager = (utlop - datetime.now(timezone.utc)).days
+
+    if dager < 14:
+        return f"VARSEL: sertifikatet utløper om {dager} dager ({versjon})"
+    return f"OK: sertifikatet varer i {dager} dager til ({versjon})"
+
+
 domene = sys.argv[1]
 print("SPF:", sjekk_spf(domene))
 print("DMARC:", sjekk_dmarc(domene))
+print("TLS:", sjekk_tls(domene))
